@@ -3,159 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f8fc">
     <title>CloudFind | Campus Lost & Found</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<header class="topbar">
-    <a class="brand" href="/">CloudFind<span>.</span></a>
-    <span class="tagline">Campus Lost & Found</span>
-</header>
+<div class="app-shell">
+    <aside class="sidebar">
+        <a class="brand" href="{{ url_for('index') }}" aria-label="CloudFind home">
+            <img class="brand-mark" src="{{ url_for('static', filename='cloudfind-icon.png') }}" alt="">
+            <span>CloudFind<small>Campus lost & found</small></span>
+        </a>
 
-<main class="container">
-    <section class="hero">
-        <div>
-            <p class="eyebrow">YOUR CAMPUS, CONNECTED</p>
-            <h1>Lost something?<br>Let's find it.</h1>
-            <p class="muted">Report missing belongings or help someone recover theirs.</p>
+        <div class="sidebar-label">WORKSPACE</div>
+        <nav class="side-nav" aria-label="Report navigation">
+            <a class="side-link {{ 'active' if active_tab == 'open' else '' }}"
+               href="{{ url_for('index', tab='open', search=search, type=selected_type) }}">
+                <span class="nav-icon">◷</span><span>Open reports</span><span class="nav-count">{{ open_count }}</span>
+            </a>
+            <a class="side-link {{ 'active' if active_tab == 'resolved' else '' }}"
+               href="{{ url_for('index', tab='resolved', search=search, type=selected_type) }}">
+                <span class="nav-icon">✓</span><span>Resolved</span><span class="nav-count">{{ resolved_count }}</span>
+            </a>
+            <a class="side-link {{ 'active' if active_tab == 'all' else '' }}"
+               href="{{ url_for('index', tab='all', search=search, type=selected_type) }}">
+                <span class="nav-icon">▤</span><span>All reports</span><span class="nav-count">{{ total }}</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-label sidebar-label-spaced">QUICK GUIDE</div>
+        <div class="sidebar-note">
+            <span class="note-icon">✦</span>
+            <strong>Help your campus reconnect</strong>
+            <p>Every report makes it easier for someone to get their belongings back.</p>
         </div>
-        <div class="hero-mark">CF</div>
-    </section>
+        <div class="sidebar-bottom">
+            <span class="status-dot"></span>
+            <span>Campus community workspace</span>
+        </div>
+    </aside>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="notice {{ category }}">{{ message }}</div>
-      {% endfor %}
-    {% endwith %}
+    <main class="main-content">
+        <header class="topbar">
+            <div class="mobile-brand"><img class="brand-mark" src="{{ url_for('static', filename='cloudfind-icon.png') }}" alt=""> cloudfind</div>
+            <div class="breadcrumb">Workspace <span>/</span> <strong>
+                {% if active_tab == 'resolved' %}Resolved reports
+                {% elif active_tab == 'all' %}All reports
+                {% else %}Open reports{% endif %}
+            </strong></div>
+            <a class="topbar-link" href="#report-form"><span>＋</span> Report an item</a>
+        </header>
 
-    <section class="stats">
-        <div class="stat"><span>Total reports</span><strong>{{ total }}</strong></div>
-        <div class="stat"><span>Open reports</span><strong>{{ open_count }}</strong></div>
-        <div class="stat"><span>Resolved</span><strong>{{ resolved_count }}</strong></div>
-    </section>
+        <div class="page-wrap">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% for category, message in messages %}
+                <div class="notice {{ category }}" role="status">{{ message }}</div>
+              {% endfor %}
+            {% endwith %}
 
-    <div class="layout">
-        <section class="panel">
-            <h2>Report an item</h2>
-            <p class="muted">Fields marked * are required.</p>
-
-            <form method="POST" enctype="multipart/form-data">
-                <label>Item name *
-                    <input name="title" maxlength="120" required placeholder="e.g. Black water bottle">
-                </label>
-
-                <div class="two-col">
-                    <label>Report type *
-                        <select name="report_type" required>
-                            <option value="Lost">I lost it</option>
-                            <option value="Found">I found it</option>
-                        </select>
-                    </label>
-                    <label>Category *
-                        <select name="category" required>
-                            {% for category in categories %}
-                            <option value="{{ category }}">{{ category }}</option>
-                            {% endfor %}
-                        </select>
-                    </label>
-                </div>
-
-                <label>Location *
-                    <input name="location" maxlength="120" required placeholder="e.g. Central library">
-                </label>
-
-                <label>Description *
-                    <textarea name="description" maxlength="1000" required
-                              placeholder="Colour, brand or other identifying details"></textarea>
-                </label>
-
-                <label>Photograph (optional)
-                    <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp">
-                </label>
-
-                <button type="submit" class="primary">Submit report</button>
-            </form>
-        </section>
-
-        <section class="reports">
-            <div class="section-heading">
+            <section class="welcome-row">
                 <div>
-                    <h2>Reports</h2>
-                    <p class="muted">Manage campus lost and found items.</p>
+                    <p class="eyebrow">CAMPUS COMMUNITY · LOST & FOUND</p>
+                    <h1>Good things find their way back.</h1>
+                    <p class="page-subtitle">A shared place to report missing items and reunite belongings with their owners.</p>
                 </div>
+                <a class="button button-primary welcome-cta" href="#report-form"><span>＋</span> Create a report</a>
+            </section>
+
+            <section class="stats-grid" aria-label="Report summary">
+                <article class="stat-card">
+                    <div class="stat-heading"><span>Total reports</span><span class="stat-icon icon-blue">▤</span></div>
+                    <div class="stat-value">{{ total }}</div>
+                    <div class="stat-foot">Reports submitted to CloudFind</div>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-heading"><span>Awaiting resolution</span><span class="stat-icon icon-amber">◷</span></div>
+                    <div class="stat-value">{{ open_count }}</div>
+                    <div class="stat-foot"><span class="tiny-dot amber-dot"></span> Still open</div>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-heading"><span>Successfully resolved</span><span class="stat-icon icon-green">✓</span></div>
+                    <div class="stat-value">{{ resolved_count }}</div>
+                    <div class="stat-foot"><span class="tiny-dot green-dot"></span> Marked resolved</div>
+                </article>
+            </section>
+
+            <div class="content-grid">
+                <section class="surface report-panel" id="report-form">
+                    <div class="surface-heading">
+                        <div class="heading-icon">＋</div>
+                        <div><h2>Report an item</h2><p>Share a few details to help someone find it.</p></div>
+                    </div>
+                    <form method="POST" enctype="multipart/form-data" class="report-form">
+                        <label>Item name <span class="required">*</span>
+                            <input name="title" maxlength="120" required placeholder="e.g. Black water bottle">
+                        </label>
+
+                        <div class="form-row">
+                            <label>Report type <span class="required">*</span>
+                                <select name="report_type" required>
+                                    <option value="Lost">I lost it</option>
+                                    <option value="Found">I found it</option>
+                                </select>
+                            </label>
+                            <label>Category <span class="required">*</span>
+                                <select name="category" required>
+                                    {% for category in categories %}
+                                    <option value="{{ category }}">{{ category }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                        </div>
+
+                        <label>Last known location <span class="required">*</span>
+                            <input name="location" maxlength="120" required placeholder="e.g. Central library">
+                        </label>
+
+                        <label>Description <span class="required">*</span>
+                            <textarea name="description" maxlength="1000" required rows="4"
+                                      placeholder="Colour, brand, identifying details..."></textarea>
+                        </label>
+
+                        <label class="upload-label">Photo <span class="optional">(optional)</span>
+                            <span class="upload-box">
+                                <span class="upload-icon">↑</span>
+                                <span><strong>Choose an image</strong><small>PNG, JPG or WEBP · up to 5 MB</small></span>
+                                <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp">
+                            </span>
+                        </label>
+                        <button type="submit" class="button button-primary submit-button">Submit report <span>→</span></button>
+                        <p class="form-footnote">Fields marked <span class="required">*</span> are required.</p>
+                    </form>
+                </section>
+
+                <section class="reports-column">
+                    <div class="reports-title-row">
+                        <div><p class="eyebrow">REPORT DIRECTORY</p><h2>Browse reports</h2><p class="page-subtitle">Find a match or check the status of an item.</p></div>
+                    </div>
+
+                    <div class="surface directory-panel">
+                        <nav class="report-tabs" aria-label="Report status">
+                            <a href="{{ url_for('index', tab='open', search=search, type=selected_type) }}"
+                               class="{{ 'active' if active_tab == 'open' else '' }}">Open <span>{{ open_count }}</span></a>
+                            <a href="{{ url_for('index', tab='resolved', search=search, type=selected_type) }}"
+                               class="{{ 'active' if active_tab == 'resolved' else '' }}">Resolved <span>{{ resolved_count }}</span></a>
+                            <a href="{{ url_for('index', tab='all', search=search, type=selected_type) }}"
+                               class="{{ 'active' if active_tab == 'all' else '' }}">All <span>{{ total }}</span></a>
+                        </nav>
+
+                        <form method="GET" class="filters">
+                            <input type="hidden" name="tab" value="{{ active_tab }}">
+                            <label class="search-field"><span>⌕</span><input name="search" value="{{ search }}" aria-label="Search reports" placeholder="Search items or locations..."></label>
+                            <select name="type" aria-label="Filter by report type">
+                                <option value="">All types</option>
+                                <option value="Lost" {% if selected_type == 'Lost' %}selected{% endif %}>Lost</option>
+                                <option value="Found" {% if selected_type == 'Found' %}selected{% endif %}>Found</option>
+                            </select>
+                            <button class="button button-filter" type="submit">Filter</button>
+                        </form>
+
+                        <div class="results-label">
+                            <span>
+                                {% if active_tab == 'resolved' %}Resolved items
+                                {% elif active_tab == 'all' %}All submitted items
+                                {% else %}Items needing attention{% endif %}
+                            </span>
+                            <span>{{ items|length }} shown</span>
+                        </div>
+
+                        <div class="item-list">
+                            {% for item in items %}
+                            <article class="item-card">
+                                {% if item.image_filename %}
+                                <img class="item-image" src="{{ url_for('static', filename='uploads/' ~ item.image_filename) }}" alt="Photograph of {{ item.title }}">
+                                {% else %}
+                                <div class="item-placeholder" aria-hidden="true"><span>▧</span></div>
+                                {% endif %}
+                                <div class="item-content">
+                                    <div class="item-badges">
+                                        <span class="pill {{ item.report_type|lower }}">{{ item.report_type }}</span>
+                                        <span class="pill {{ item.status|lower }}"><span class="pill-dot"></span>{{ item.status }}</span>
+                                    </div>
+                                    <h3>{{ item.title }}</h3>
+                                    <p class="item-meta"><span>⌖</span> {{ item.location }} <span class="meta-separator">·</span> {{ item.category }}</p>
+                                    <p class="item-description">{{ item.description }}</p>
+                                    <div class="item-footer">
+                                        <small>Report #{{ item.id }} · {{ item.created_at.strftime('%d %b %Y, %H:%M') }}</small>
+                                        <form method="POST" action="{{ url_for('update_status', item_id=item.id) }}" class="status-form">
+                                            <label class="sr-only" for="status-{{ item.id }}">Status for {{ item.title }}</label>
+                                            <select id="status-{{ item.id }}" name="status" aria-label="Update status for {{ item.title }}">
+                                                <option value="Open" {% if item.status == 'Open' %}selected{% endif %}>Open</option>
+                                                <option value="Resolved" {% if item.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                                            </select>
+                                            <button type="submit" class="save-status">Save</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </article>
+                            {% else %}
+                            <div class="empty-state">
+                                <div class="empty-icon">⌕</div>
+                                <h3>No reports found</h3>
+                                <p>Try another search or filter, or submit a new report.</p>
+                                <a href="{{ url_for('index', tab=active_tab) }}">Clear filters</a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
             </div>
-
-            <nav class="report-tabs">
-                <a href="{{ url_for('index', tab='open', search=search, type=selected_type) }}"
-                    class="{{ 'active' if active_tab == 'open' else '' }}">
-                    Open ({{ open_count }})
-                </a>
-                <a href="{{ url_for('index', tab='resolved', search=search, type=selected_type) }}"
-                    class="{{ 'active' if active_tab == 'resolved' else '' }}">
-                    Resolved ({{ resolved_count }})
-                </a>
-                <a href="{{ url_for('index', tab='all', search=search, type=selected_type) }}"
-                    class="{{ 'active' if active_tab == 'all' else '' }}">
-                    All reports ({{ total }})
-                </a>
-            </nav>
-
-            <form method="GET" class="filters">
-                <input type="hidden" name="tab" value="{{ active_tab }}">
-                <input name="search" value="{{ search }}" placeholder="Search reports...">
-                <select name="type">
-                    <option value="">All types</option>
-                    <option value="Lost" {% if selected_type == 'Lost' %}selected{% endif %}>Lost</option>
-                    <option value="Found" {% if selected_type == 'Found' %}selected{% endif %}>Found</option>
-                </select>
-                <!--
-                <select name="status">
-                    <option value="">All statuses</option>
-                    <option value="Open" {% if selected_status == 'Open' %}selected{% endif %}>Open</option>
-                    <option value="Resolved" {% if selected_status == 'Resolved' %}selected{% endif %}>Resolved</option>
-                </select>
-                -->
-                <button class="secondary" type="submit">Filter</button>
-            </form>
-
-            {% for item in items %}
-            <article class="item-card">
-                {% if item.image_filename %}
-                <img class="item-image"
-                     src="{{ url_for('static', filename='uploads/' ~ item.image_filename) }}"
-                     alt="Photograph of {{ item.title }}">
-                {% endif %}
-
-                <div class="item-top">
-                    <span class="pill {{ item.report_type|lower }}">{{ item.report_type }}</span>
-                    <span class="pill {{ item.status|lower }}">{{ item.status }}</span>
-                </div>
-
-                <h3>{{ item.title }}</h3>
-                <p class="muted">{{ item.category }} · {{ item.location }}</p>
-                <p>{{ item.description }}</p>
-                <small class="muted">Report #{{ item.id }} · {{ item.created_at.strftime('%d %b %Y, %H:%M') }}</small>
-
-                <form method="POST" action="{{ url_for('update_status', item_id=item.id) }}" class="status-form">
-                    <label>Update status
-                        <select name="status">
-                            <option value="Open" {% if item.status == 'Open' %}selected{% endif %}>Open</option>
-                            <option value="Resolved" {% if item.status == 'Resolved' %}selected{% endif %}>Resolved</option>
-                        </select>
-                    </label>
-                    <button class="secondary" type="submit">Save status</button>
-                </form>
-            </article>
-            {% else %}
-            <div class="empty">
-                <h3>No reports found</h3>
-                <p class="muted">Submit your first report or change your search filters.</p>
-            </div>
-            {% endfor %}
-        </section>
-    </div>
-</main>
-
-<footer>CloudFind · Cloud architecture project</footer>
+            <footer class="page-footer"><span>cloudfind</span><span>Helping campus belongings find their way home.</span></footer>
+        </div>
+    </main>
+</div>
 </body>
 </html>
