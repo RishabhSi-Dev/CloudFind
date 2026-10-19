@@ -11,7 +11,9 @@ UPLOAD_DIR = BASE_DIR / "static" / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "local-dev-only-change-before-deploy")
+app.config["SECRET_KEY"] = os.getenv(
+    "SECRET_KEY", "local-dev-only-change-before-deploy"
+)
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"sqlite:///{BASE_DIR / 'cloudfind.db'}"
 )
@@ -135,4 +137,4 @@ def update_status(item_id):
 with app.app_context():
     db.create_all()
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
