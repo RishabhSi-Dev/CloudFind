@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CloudFind | Campus Lost & Found</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="/">CloudFind<span>.</span></a>
+    <span class="tagline">Campus Lost & Found</span>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <div>
+            <p class="eyebrow">YOUR CAMPUS, CONNECTED</p>
+            <h1>Lost something?<br>Let's find it.</h1>
+            <p class="muted">Report missing belongings or help someone recover theirs.</p>
+        </div>
+        <div class="hero-mark">CF</div>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="notice {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <section class="stats">
+        <div class="stat"><span>Total reports</span><strong>{{ total }}</strong></div>
+        <div class="stat"><span>Open reports</span><strong>{{ open_count }}</strong></div>
+        <div class="stat"><span>Resolved</span><strong>{{ resolved_count }}</strong></div>
+    </section>
+
+    <div class="layout">
+        <section class="panel">
+            <h2>Report an item</h2>
+            <p class="muted">Fields marked * are required.</p>
+
+            <form method="POST" enctype="multipart/form-data">
+                <label>Item name *
+                    <input name="title" maxlength="120" required placeholder="e.g. Black water bottle">
+                </label>
+
+                <div class="two-col">
+                    <label>Report type *
+                        <select name="report_type" required>
+                            <option value="Lost">I lost it</option>
+                            <option value="Found">I found it</option>
+                        </select>
+                    </label>
+                    <label>Category *
+                        <select name="category" required>
+                            {% for category in categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+
+                <label>Location *
+                    <input name="location" maxlength="120" required placeholder="e.g. Central library">
+                </label>
+
+                <label>Description *
+                    <textarea name="description" maxlength="1000" required
+                              placeholder="Colour, brand or other identifying details"></textarea>
+                </label>
+
+                <label>Photograph (optional)
+                    <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp">
+                </label>
+
+                <button type="submit" class="primary">Submit report</button>
+            </form>
+        </section>
+
+        <section class="reports">
+            <div class="section-heading">
+                <div>
+                    <h2>Reports</h2>
+                    <p class="muted">Manage campus lost and found items.</p>
+                </div>
+            </div>
+
+            <nav class="report-tabs">
+                <a href="{{ url_for('index', tab='open', search=search, type=selected_type) }}"
+                    class="{{ 'active' if active_tab == 'open' else '' }}">
+                    Open ({{ open_count }})
+                </a>
+                <a href="{{ url_for('index', tab='resolved', search=search, type=selected_type) }}"
+                    class="{{ 'active' if active_tab == 'resolved' else '' }}">
+                    Resolved ({{ resolved_count }})
+                </a>
+                <a href="{{ url_for('index', tab='all', search=search, type=selected_type) }}"
+                    class="{{ 'active' if active_tab == 'all' else '' }}">
+                    All reports ({{ total }})
+                </a>
+            </nav>
+
+            <form method="GET" class="filters">
+                <input type="hidden" name="tab" value="{{ active_tab }}">
+                <input name="search" value="{{ search }}" placeholder="Search reports...">
+                <select name="type">
+                    <option value="">All types</option>
+                    <option value="Lost" {% if selected_type == 'Lost' %}selected{% endif %}>Lost</option>
+                    <option value="Found" {% if selected_type == 'Found' %}selected{% endif %}>Found</option>
+                </select>
+                <!--
+                <select name="status">
+                    <option value="">All statuses</option>
+                    <option value="Open" {% if selected_status == 'Open' %}selected{% endif %}>Open</option>
+                    <option value="Resolved" {% if selected_status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                </select>
+                -->
+                <button class="secondary" type="submit">Filter</button>
+            </form>
+
+            {% for item in items %}
+            <article class="item-card">
+                {% if item.image_filename %}
+                <img class="item-image"
+                     src="{{ url_for('static', filename='uploads/' ~ item.image_filename) }}"
+                     alt="Photograph of {{ item.title }}">
+                {% endif %}
+
+                <div class="item-top">
+                    <span class="pill {{ item.report_type|lower }}">{{ item.report_type }}</span>
+                    <span class="pill {{ item.status|lower }}">{{ item.status }}</span>
+                </div>
+
+                <h3>{{ item.title }}</h3>
+                <p class="muted">{{ item.category }} · {{ item.location }}</p>
+                <p>{{ item.description }}</p>
+                <small class="muted">Report #{{ item.id }} · {{ item.created_at.strftime('%d %b %Y, %H:%M') }}</small>
+
+                <form method="POST" action="{{ url_for('update_status', item_id=item.id) }}" class="status-form">
+                    <label>Update status
+                        <select name="status">
+                            <option value="Open" {% if item.status == 'Open' %}selected{% endif %}>Open</option>
+                            <option value="Resolved" {% if item.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                        </select>
+                    </label>
+                    <button class="secondary" type="submit">Save status</button>
+                </form>
+            </article>
+            {% else %}
+            <div class="empty">
+                <h3>No reports found</h3>
+                <p class="muted">Submit your first report or change your search filters.</p>
+            </div>
+            {% endfor %}
+        </section>
+    </div>
+</main>
+
+<footer>CloudFind · Cloud architecture project</footer>
+</body>
+</html>

@@ -1,0 +1,36 @@
+# Python virtual environments
+.venv/
+.venv-1/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables and secrets
+.env
+.env.*
+
+# Keep example environment configuration, if created
+!.env.example
+
+# Local databases and user uploads
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Local image uploads
+uploads/*
+!uploads/.gitkeep
+
+# Flask instance files
+instance/
+
+# Development files
+.vscode/
+.DS_Store
+
+static/uploads/*
+!static/uploads/.gitkeep
