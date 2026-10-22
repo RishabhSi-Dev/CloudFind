@@ -11,9 +11,7 @@ UPLOAD_DIR = BASE_DIR / "static" / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv(
-    "SECRET_KEY", "local-dev-only-change-before-deploy"
-)
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"sqlite:///{BASE_DIR / 'cloudfind.db'}"
 )
