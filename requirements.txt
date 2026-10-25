@@ -2,3 +2,5 @@ Flask
 Flask-SQLAlchemy
 python-dotenv
 gunicorn
+boto3
+PyMySQL

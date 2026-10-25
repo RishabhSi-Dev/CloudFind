@@ -174,9 +174,8 @@
                         <div class="item-list">
                             {% for item in items %}
                             <article class="item-card">
-                                {% if item.image_filename %}
-                                <img class="item-image" src="{{ url_for('static', filename='uploads/' ~ item.image_filename) }}" alt="Photograph of {{ item.title }}">
-                                {% else %}
+                                {% if item.display_image_url %}
+                                <img class="item-image" src="{{ item.display_image_url }}" alt="Photograph of {{ item.title }}">                                {% else %}
                                 <div class="item-placeholder" aria-hidden="true"><span>▧</span></div>
                                 {% endif %}
                                 <div class="item-content">
